@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Signup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            width: 300px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input, button {
+            width: 100%;
+            max-width: 260px;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #C74375;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #a63660;
+        }
+
+        .link {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .link a {
+            color: #C74375;
+            text-decoration: none;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Регистрация</h2>
+    <div id="errorDisplay" style="color:#d33; font-weight:bold; min-height:20px; margin-bottom:10px;"></div>
+    <label for="username"></label><input type="text" id="username" placeholder="Логин" required>
+    <label for="password"></label><input type="password" id="password" placeholder="Пароль" required>
+    <button onclick="signup()">Зарегистрироваться</button>
+
+    <div class="link">
+        Уже есть аккаунт? <a href="login.html">Войти</a>
+    </div>
+</div>
+
+<script>
+    function signup() {
+        const login = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        if (errorDisplay) errorDisplay.textContent = "";
+
+        if (!login || !password) {
+            errorDisplay.textContent = "⚠️ " + "Введите логин и пароль";
+            return;
+        }
+
+        fetch("/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ login, password })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Ошибка регистрации");
+            alert("Регистрация успешна! Теперь войдите.");
+            window.location.href = "login.html";
+        })
+        .catch(err => errorDisplay.textContent = "⚠️ " + err.message);
+    }
+</script>
+</body>
+</html>

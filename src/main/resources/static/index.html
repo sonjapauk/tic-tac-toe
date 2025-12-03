@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            padding: 30px;
+            text-align: center;
+            width: 400px;
+        }
+
+        h1 {
+            color: #C74375;
+            margin-bottom: 20px;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background: #C74375;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #a63660;
+        }
+
+        .games-list {
+            margin-top: 20px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
+        .game-item {
+            background: #f8e5f0;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .game-item button {
+            width: auto;
+            font-size: 14px;
+            padding: 6px 10px;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            gap: 10px;
+            margin: 20px auto;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cell {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            font-size: 36px;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+            border: 2px solid #C74375;
+            color: #000;
+        }
+
+        .cell:hover {
+            background: #f8e5f0;
+        }
+
+        #statusDisplay {
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #C74375;
+        }
+
+        #gameIdDisplay, #userIdDisplay {
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        #ratingScreen {
+            display: none;
+        }
+
+        .rating-table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .rating-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .rating-table thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f0f0f0;
+            z-index: 2;
+            border-bottom: 2px solid #ccc;
+        }
+
+        .rating-table th,
+        .rating-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .rating-table tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        .rating-table tbody tr:hover {
+            background-color: #ffe6ef;
+        }
+
+        .rating-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 6px;
+            border: none;
+            font-size: 16px;
+            background: #C74375;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .rating-btn:hover {
+            background: #a63660;
+        }
+
+        .rating-input {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .rating-input input {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .rating-btn-small {
+            background: #C74375;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .rating-btn-small:hover {
+            background: #a63660;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Tic Tac Toe</h1>
+    <div id="errorDisplay" style="color:#d33; font-weight:bold; min-height:20px; margin-bottom:10px;"></div>
+
+    <div id="menuScreen">
+        <h3>Создать новую игру</h3>
+        <label for="opponent"></label><select id="opponent">
+        <option value="human">С человеком</option>
+        <option value="bot">С компьютером</option>
+    </select>
+        <label for="mark"></label><select id="mark">
+        <option value="X">Крестики</option>
+        <option value="O">Нолики</option>
+    </select>
+        <button id="createGameBtn">Создать игру</button>
+
+        <h3>Доступные игры</h3>
+        <div id="gamesList" class="games-list"></div>
+        <button id="statsBtn">Статистика</button>
+        <button id="logoutBtn">Выйти</button>
+    </div>
+
+    <div id="gameScreen" style="display:none;">
+        <div id="gameIdDisplay"></div>
+        <div id="userIdDisplay"></div>
+        <div id="statusDisplay"></div>
+        <div id="board"></div>
+        <button id="backToStats" style="display:none;">Назад к статистике</button>
+        <div class="button-row">
+            <button id="exitToMenu">В меню</button>
+        </div>
+    </div>
+
+    <div id="statsScreen" style="display:none;">
+        <h3>Завершённые игры</h3>
+        <div id="finishedGamesList" class="games-list"></div>
+        <button id="bestPlayersBtn">Лучшие игроки</button>
+        <button id="backToMenuFromStats">Назад</button>
+    </div>
+
+    <div id="ratingScreen">
+        <h3>Лучшие игроки</h3>
+
+        <div class="rating-input">
+            <label for="ratingCount">Топ:</label>
+            <input type="number" id="ratingCount" min="1" value="10">
+            <button id="loadRatingBtn" class="rating-btn-small">Показать</button>
+        </div>
+
+        <div class="rating-table-container">
+            <table id="bestPlayersTable" class="rating-table">
+                <thead>
+                <tr>
+                    <th>Место</th>
+                    <th>ID</th>
+                    <th>Рейтинг</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <button id="backToStatsFromRating" class="rating-btn">Назад к статистике</button>
+        <button id="backToMenuFromRating" class="rating-btn">В меню</button>
+    </div>
+</div>
+<script>
+    let accessToken = localStorage.getItem("token");
+    let userId = localStorage.getItem("userId");
+
+    const listContainer = document.getElementById("gamesList");
+    const menuScreen = document.getElementById("menuScreen");
+    const gameScreen = document.getElementById("gameScreen");
+
+    const board = document.getElementById("board");
+    const gameIdDisplay = document.getElementById("gameIdDisplay");
+    const userIdDisplay = document.getElementById("userIdDisplay");
+    const statusDisplay = document.getElementById("statusDisplay");
+
+    const statsScreen = document.getElementById("statsScreen");
+    const finishedGamesList = document.getElementById("finishedGamesList");
+
+    if (!accessToken) window.location.href = "login.html";
+
+    let gameId = localStorage.getItem("matchId");
+    let gameField = null;
+    let state = null;
+    let stateMessage = null;
+    let isViewingFinishedGame = false;
+
+    async function authFetch(url, options = {}) {
+        if (!options.headers) options.headers = {};
+        options.headers["Authorization"] = "Bearer " + accessToken;
+
+        let response = await fetch(url, options);
+
+        if (response.status === 401) {
+            const refreshResponse = await fetch("/refresh/access", {
+                method: "POST",
+                credentials: "include"
+            });
+
+            if (refreshResponse.ok) {
+                const data = await refreshResponse.json();
+                accessToken = data.accessToken;
+                localStorage.setItem("token", accessToken);
+
+                options.headers["Authorization"] = "Bearer " + accessToken;
+                response = await fetch(url, options);
+            } else {
+                logout();
+                throw new Error("Сессия истекла. Пожалуйста, войдите снова.");
+            }
+        }
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.message || `Ошибка ${response.status}`);
+        }
+
+        return data;
+    }
+
+    function logout() {
+        fetch("/exit", {method: "POST"})
+        .then(() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            localStorage.removeItem("matchId");
+
+            window.location.href = "login.html";
+        });
+    }
+
+    function updateGameIdDisplay() { gameIdDisplay.textContent = gameId ? `ID игры: ${gameId}` : ""; }
+    function updateUserIdDisplay() { userIdDisplay.textContent = userId ? `Ваш ID: ${userId}` : ""; }
+    function updateStatusDisplay() { statusDisplay.textContent = stateMessage; }
+
+    function showMenu() {
+        menuScreen.style.display = "block";
+        gameScreen.style.display = "none";
+        fetchGames();
+    }
+
+    function showGame() {
+        menuScreen.style.display = "none";
+        gameScreen.style.display = "block";
+
+        if (!isViewingFinishedGame) {
+            document.getElementById("backToStats").style.display = "none";
+        }
+
+        renderBoard();
+    }
+
+    function showError(err, place = "alert") {
+        const message = err?.message || "Неизвестная ошибка";
+        const errorDisplay = document.getElementById("errorDisplay");
+
+        if (errorDisplay) errorDisplay.textContent = "";
+
+        if (place === "status" && statusDisplay) {
+            statusDisplay.textContent = "⚠️ " + message;
+        } else if (place === "menu" && errorDisplay) {
+            errorDisplay.textContent = "⚠️ " + message;
+        } else {
+            alert(message);
+        }
+
+        console.error("Ошибка:", err);
+    }
+
+    async function fetchGames() {
+        try {
+            const ids = await authFetch("/join");
+            listContainer.innerHTML = "";
+
+            if (!ids || ids.length === 0) {
+                listContainer.innerHTML = "<p>Нет доступных игр.</p>";
+                return;
+            }
+
+            ids.forEach(id => {
+                const div = document.createElement("div");
+                div.classList.add("game-item");
+                div.innerHTML = `<span>${id}</span><button onclick="joinGame('${id}')">Присоединиться</button>`;
+                listContainer.appendChild(div);
+            });
+        } catch(err) {
+            showError(err, "menu");
+        }
+    }
+
+    async function joinGame(id) {
+        try {
+            const data = await authFetch(`/join/${id}`, { method: "POST" });
+
+            localStorage.setItem("matchId", data.id);
+            gameId = data.id;
+            gameField = data.game.field.field.map(row => row.map(Number));
+            state = data.state;
+            stateMessage = data.stateMessage;
+
+            showGame();
+        } catch(err) {
+           showError(err, "menu");
+        }
+    }
+
+    document.getElementById("createGameBtn").addEventListener("click", async () => {
+        const vsComputer = document.getElementById("opponent").value === "bot";
+        const chosenMark = document.getElementById("mark").value;
+
+        try {
+            const data = await authFetch("/game", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ vsComputer: vsComputer, chosenMark: chosenMark })
+            });
+
+            localStorage.setItem("matchId", data.id);
+            gameId = data.id;
+            gameField = data.game.field.field.map(row => row.map(Number));
+            state = data.state;
+            stateMessage = data.stateMessage;
+
+            showGame();
+        } catch(err) {
+            showError(err, "menu");
+        }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+
+    document.getElementById("exitToMenu").addEventListener("click", () => {
+        localStorage.removeItem("matchId");
+        gameId = null;
+        gameField = null;
+        state = null;
+        stateMessage = null;
+
+        isViewingFinishedGame = false;
+        document.getElementById("backToStats").style.display = "none";
+
+        showMenu();
+    });
+
+    function renderBoard() {
+        board.innerHTML = "";
+        updateGameIdDisplay();
+        updateUserIdDisplay();
+        updateStatusDisplay();
+
+        if (!gameField) return;
+
+        const rows = gameField.length;
+        const cols = gameField[0].length;
+        board.style.gridTemplateColumns = `repeat(${cols}, 80px)`;
+
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.dataset.row = i;
+                cell.dataset.col = j;
+
+                const value = Number(gameField[i][j]);
+                cell.textContent = value === 1 ? "X" : value === 2 ? "O" : "";
+
+                if ((state === "PLAYER_X_MOVE" || state === "PLAYER_O_MOVE") && value === 0) {
+                    cell.addEventListener("click", cellClick);
+                }
+
+                board.appendChild(cell);
+            }
+        }
+    }
+
+    function cellClick(event) {
+        const row = parseInt(event.target.dataset.row);
+        const col = parseInt(event.target.dataset.col);
+
+        if (Number(gameField[row][col]) !== 0) return;
+
+        const currentPlayerValue = (state === "PLAYER_X_MOVE") ? 1 : 2;
+        gameField[row][col] = currentPlayerValue;
+
+        sendMove();
+    }
+
+    async function sendMove() {
+        if (!gameId) return;
+
+        try {
+            const data = await authFetch(`/game/${gameId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ field: { field: gameField } })
+            });
+
+            gameField = data.game.field.field.map(row => row.map(Number));
+            state = data.state;
+            stateMessage = data.stateMessage;
+            renderBoard();
+        } catch(err) {
+            showError(err, "status");
+        }
+    }
+
+    function showStatsScreen() {
+        menuScreen.style.display = "none";
+        gameScreen.style.display = "none";
+        statsScreen.style.display = "block";
+        fetchFinishedGames();
+    }
+
+    function hideStatsScreen() {
+        statsScreen.style.display = "none";
+        showMenu();
+    }
+
+    async function fetchFinishedGames() {
+        try {
+            const games = await authFetch("/game/finished");
+            finishedGamesList.innerHTML = "";
+
+            if (!games || games.length === 0) {
+                finishedGamesList.innerHTML = "<p>Нет завершённых игр.</p>";
+                return;
+            }
+
+            games.forEach(id => {
+                const div = document.createElement("div");
+                div.classList.add("game-item");
+                div.innerHTML = `<span>${id}</span><button onclick="viewFinishedGame('${id}')">Открыть</button>`;
+                finishedGamesList.appendChild(div);
+            });
+        } catch (err) {
+            showError(err, "menu");
+        }
+    }
+
+    document.getElementById("statsBtn").addEventListener("click", showStatsScreen);
+    document.getElementById("backToMenuFromStats").addEventListener("click", hideStatsScreen);
+    document.getElementById("backToStats").addEventListener("click", () => {
+        isViewingFinishedGame = false;
+        showStatsScreen();
+    });
+
+    async function viewFinishedGame(id) {
+        try {
+            const data = await authFetch(`/game/${id}`);
+
+            gameField = data.game.field.field.map(row => row.map(Number));
+            state = data.state;
+            stateMessage = data.stateMessage;
+            gameId = id;
+
+            isViewingFinishedGame = true;
+            statsScreen.style.display = "none";
+
+            showGame();
+
+            document.getElementById("backToStats").style.display = "block";
+        } catch (err) {
+            showError(err, "menu");
+        }
+    }
+
+    const ratingScreen = document.getElementById("ratingScreen");
+    const bestPlayersList = document.getElementById("bestPlayersList");
+
+    async function showRatingScreen() {
+        statsScreen.style.display = "none";
+        menuScreen.style.display = "none";
+        gameScreen.style.display = "none";
+        ratingScreen.style.display = "block";
+        await loadBestPlayers();
+    }
+
+    function hideRatingScreen(toMenu = false) {
+        ratingScreen.style.display = "none";
+        if (toMenu) {
+            showMenu();
+        } else {
+            showStatsScreen();
+        }
+    }
+
+    async function loadBestPlayers() {
+        const N = document.getElementById("ratingCount").value || 10;
+
+        const players = await authFetch(`/game/best-players?N=${N}`);
+
+        const tbody = document.querySelector("#bestPlayersTable tbody");
+        tbody.innerHTML = "";
+
+        players.forEach((player, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${player.userId}</td>
+                <td>${player.rate}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    document.getElementById("bestPlayersBtn").addEventListener("click", showRatingScreen);
+    document.getElementById("backToStatsFromRating").addEventListener("click", () => hideRatingScreen(false));
+    document.getElementById("backToMenuFromRating").addEventListener("click", () => hideRatingScreen(true));
+
+    document.getElementById("loadRatingBtn").addEventListener("click", loadBestPlayers);
+
+    (async function init() {
+        if (gameId) {
+            try {
+                const data = await authFetch(`/game/${gameId}`);
+
+                gameField = data.game.field.field.map(row => row.map(Number));
+                state = data.state;
+                stateMessage = data.stateMessage;
+
+                if (data.idX === userId || data.idO === userId) {
+                    showGame();
+                } else {
+                    showMenu();
+                }
+            } catch (err) {
+                showMenu();
+                showError(err, "menu");
+            }
+        } else {
+            showMenu();
+        }
+    })();
+</script>
+</body>
+</html>
